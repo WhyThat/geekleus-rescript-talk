@@ -1,18 +1,11 @@
-type props = {
-  msg: string,
-  href: string,
-}
+type props = unit
 
-let default = (props: props) =>
+let default = (_props: props) =>
   <div>
-    {React.string(props.msg)}
-    <a href=props.href target="_blank"> {React.string("`src/Examples.res`")} </a>
+    <Base />
   </div>
 
 let getServerSideProps = _ctx => {
-  let props = {
-    msg: "This page was rendered with getServerSideProps. You can find the source code here: ",
-    href: "https://github.com/ryyppy/nextjs-default/tree/master/src/Examples.res",
-  }
+  let props = ()
   Js.Promise.resolve({"props": props})
 }

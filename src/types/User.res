@@ -1,11 +1,12 @@
 module Email: {
   type t
-  let isValid: string => bool
+  let toString: t => string
   let make: string => option<t>
 } = {
   type t = string
   let isValid: string => bool = str => Js.String.includes("@", str)
   let make: string => option<t> = str => isValid(str) ? Some(str) : None
+  let toString: t => string = t => t
 }
 
 type t = {

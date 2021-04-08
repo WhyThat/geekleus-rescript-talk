@@ -18,8 +18,8 @@ var headerText = "text-white text-center font-bold text-xl";
 var form = "flex flex-col py-6 px-8 space-y-5 bg-white";
 
 function button(email, status) {
-  var match = User.Email.isValid(email);
-  var bg = match && status === 1 ? "bg-yellow-500" : "bg-gray-400";
+  var bg;
+  bg = email.TAG === /* Valid */0 && status === 1 ? "bg-yellow-500" : "bg-gray-400";
   return "w-full py-3 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg " + bg;
 }
 
@@ -50,9 +50,19 @@ function reducer(state, action) {
                 status: /* Edited */1
               };
     case /* Email */1 :
+        var emailStr = action._1;
+        var email = User.Email.make(emailStr);
         return {
                 name: state.name,
-                email: action._1,
+                email: email !== undefined ? ({
+                      TAG: 0,
+                      _0: Caml_option.valFromOption(email),
+                      [Symbol.for("name")]: "Valid"
+                    }) : ({
+                      TAG: 1,
+                      _0: emailStr,
+                      [Symbol.for("name")]: "Invalid"
+                    }),
                 age: state.age,
                 status: /* Edited */1
               };
@@ -80,7 +90,11 @@ function updateField(dispatch, field, ev) {
 function Profile(Props) {
   var match = React.useReducer(reducer, {
         name: "",
-        email: "",
+        email: {
+          TAG: 1,
+          _0: "",
+          [Symbol.for("name")]: "Invalid"
+        },
         age: 0,
         status: /* Iddle */0
       });
@@ -95,25 +109,30 @@ function Profile(Props) {
           _0: /* Saving */2,
           [Symbol.for("name")]: "UpdateStatus"
         });
-    var email = User.Email.make(state.email);
-    if (email !== undefined) {
-      User.persist({
-              name: state.name,
-              age: state.age,
-              email: Caml_option.valFromOption(email)
-            }).then(function (_user) {
-            return Promise.resolve(Curry._1(dispatch, {
-                            TAG: 1,
-                            _0: /* Saved */3,
-                            [Symbol.for("name")]: "UpdateStatus"
-                          }));
-          });
+    var email = state.email;
+    if (email.TAG !== /* Valid */0) {
       return ;
     }
+    User.persist({
+            name: state.name,
+            age: state.age,
+            email: email._0
+          }).then(function (_user) {
+          return Promise.resolve(Curry._1(dispatch, {
+                          TAG: 1,
+                          _0: /* Saved */3,
+                          [Symbol.for("name")]: "UpdateStatus"
+                        }));
+        });
     
   };
-  var match$1 = User.Email.isValid(state.email);
+  var email = state.email;
+  var tmp;
+  tmp = email.TAG === /* Valid */0 ? User.Email.toString(email._0) : email._0;
+  var match$1 = state.email;
   var match$2 = state.status;
+  var tmp$1;
+  tmp$1 = match$1.TAG === /* Valid */0 ? match$2 !== 1 : true;
   var match$3 = state.status;
   return React.createElement("div", {
               className: container
@@ -135,7 +154,7 @@ function Profile(Props) {
                       className: input,
                       placeholder: "Enter your email",
                       type: "email",
-                      value: state.email,
+                      value: tmp,
                       onChange: (function (param) {
                           return onChange(/* Email */1, param);
                         })
@@ -148,7 +167,7 @@ function Profile(Props) {
                         })
                     }), React.createElement("button", {
                       className: button(state.email, state.status),
-                      disabled: match$1 ? match$2 !== 1 : true,
+                      disabled: tmp$1,
                       onClick: onClick
                     }, match$3 !== 2 ? (
                         match$3 >= 3 ? "Saved" : "Save"

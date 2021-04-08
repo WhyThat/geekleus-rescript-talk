@@ -4,6 +4,10 @@ type status =
   | Saving
   | Saved
 
+type email =
+  | Valid(User.Email.t)
+  | Invalid(string)
+
 module Style = {
   let input = "px-2 py-2 border-2 rounded-md border-gray-200 focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-transparent"
   let container = "flex flex-col shadow-xl"
@@ -12,9 +16,9 @@ module Style = {
 
   let form = "flex flex-col py-6 px-8 space-y-5 bg-white"
   let button = (email, status) => {
-    let bg = switch (email->User.Email.isValid, status) {
-    | (true, Edited) => "bg-yellow-500"
-    | (false, Edited)
+    let bg = switch (email, status) {
+    | (Valid(_), Edited) => "bg-yellow-500"
+    | (Invalid(_), Edited)
     | (_, Iddle)
     | (_, Saving)
     | (_, Saved) => "bg-gray-400"
@@ -28,10 +32,6 @@ type field =
   | Name
   | Email
   | Age
-
-type email =
-  | Valid(User.Email.t)
-  | Invalid(string)
 
 type state = {
   name: string,
@@ -54,7 +54,10 @@ let reducer = (state, action: action) =>
   | Update(Email, emailStr) => {
       ...state,
       status: Edited,
-      email: emailStr,
+      email: switch emailStr->User.Email.make {
+      | Some(email) => Valid(email)
+      | None => Invalid(emailStr)
+      },
     }
   | Update(Age, age) => {
       ...state,
@@ -75,7 +78,7 @@ let make = () => {
     reducer,
     {
       name: "",
-      email: "",
+      email: Invalid(""),
       age: 0,
       status: Iddle,
     },
@@ -85,12 +88,12 @@ let make = () => {
 
   let onClick = _ => {
     dispatch(UpdateStatus(Saving))
-    switch state.email->User.Email.make {
-    | Some(email) =>
+    switch state.email {
+    | Valid(email) =>
       User.persist(({email: email, name: state.name, age: state.age}: User.t))
       |> Js.Promise.then_(_user => dispatch(UpdateStatus(Saved)) |> Js.Promise.resolve)
       |> ignore
-    | None => ()
+    | Invalid(_) => ()
     }
   }
 
@@ -111,7 +114,10 @@ let make = () => {
         type_="email"
         onChange={onChange(Email)}
         placeholder="Enter your email"
-        value=state.email
+        value={switch state.email {
+        | Valid(email) => User.Email.toString(email)
+        | Invalid(email) => email
+        }}
       />
       <input
         className=Style.input
@@ -121,8 +127,8 @@ let make = () => {
       />
       <button
         onClick
-        disabled={switch (state.email->User.Email.isValid, state.status) {
-        | (true, Edited) => false
+        disabled={switch (state.email, state.status) {
+        | (Valid(_), Edited) => false
         | _ => true
         }}
         className={Style.button(state.email, state.status)}>

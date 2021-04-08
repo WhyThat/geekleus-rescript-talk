@@ -16,7 +16,10 @@ var headerText = "text-white text-center font-bold text-xl";
 
 var form = "flex flex-col py-6 px-8 space-y-5 bg-white";
 
-var button = "w-full py-3 bg-yellow-500 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg";
+function button(status) {
+  var bg = status !== 1 ? "bg-gray-400" : "bg-yellow-500";
+  return "w-full py-3 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg " + bg;
+}
 
 var Style = {
   input: input,
@@ -33,7 +36,7 @@ function reducer(state, action) {
             name: state.name,
             email: state.email,
             age: state.age,
-            isLoading: action._0
+            status: action._0
           };
   }
   switch (action._0) {
@@ -42,21 +45,21 @@ function reducer(state, action) {
                 name: action._1,
                 email: state.email,
                 age: state.age,
-                isLoading: state.isLoading
+                status: /* Edited */1
               };
     case /* Email */1 :
         return {
                 name: state.name,
                 email: action._1,
                 age: state.age,
-                isLoading: state.isLoading
+                status: /* Edited */1
               };
     case /* Age */2 :
         return {
                 name: state.name,
                 email: state.email,
                 age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
-                isLoading: state.isLoading
+                status: /* Edited */1
               };
     
   }
@@ -77,7 +80,7 @@ function Profile(Props) {
         name: "",
         email: "",
         age: 0,
-        isLoading: false
+        status: /* Iddle */0
       });
   var dispatch = match[1];
   var state = match[0];
@@ -87,8 +90,8 @@ function Profile(Props) {
   var onClick = function (param) {
     Curry._1(dispatch, {
           TAG: 1,
-          _0: true,
-          [Symbol.for("name")]: "UpdateIsLoading"
+          _0: /* Saving */2,
+          [Symbol.for("name")]: "UpdateStatus"
         });
     User.persist({
             name: state.name,
@@ -97,12 +100,14 @@ function Profile(Props) {
           }).then(function (_user) {
           return Promise.resolve(Curry._1(dispatch, {
                           TAG: 1,
-                          _0: false,
-                          [Symbol.for("name")]: "UpdateIsLoading"
+                          _0: /* Saved */3,
+                          [Symbol.for("name")]: "UpdateStatus"
                         }));
         });
     
   };
+  var match$1 = state.status;
+  var match$2 = state.status;
   return React.createElement("div", {
               className: container
             }, React.createElement("div", {
@@ -135,9 +140,12 @@ function Profile(Props) {
                           return onChange(/* Age */2, param);
                         })
                     }), React.createElement("button", {
-                      className: button,
+                      className: button(state.status),
+                      disabled: match$1 !== 1,
                       onClick: onClick
-                    }, state.isLoading ? "Saving" : "Save")));
+                    }, match$2 !== 2 ? (
+                        match$2 >= 3 ? "Saved" : "Save"
+                      ) : "Saving...")));
 }
 
 var make = Profile;

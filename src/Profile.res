@@ -1,3 +1,8 @@
+type status =
+  | Iddle
+  | Edited
+  | Saving
+  | Saved
 module Style = {
   let input = "px-2 py-2 border-2 rounded-md border-gray-200 focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-transparent"
   let container = "flex flex-col shadow-xl"
@@ -5,7 +10,16 @@ module Style = {
   let headerText = "text-white text-center font-bold text-xl"
 
   let form = "flex flex-col py-6 px-8 space-y-5 bg-white"
-  let button = "w-full py-3 bg-yellow-500 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg"
+  let button = status => {
+    let bg = switch status {
+    | Edited => "bg-yellow-500"
+    | Iddle
+    | Saving
+    | Saved => "bg-gray-400"
+    }
+    "w-full py-3 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg " ++
+    bg
+  }
 }
 
 type field =
@@ -17,22 +31,31 @@ type state = {
   name: string,
   email: string,
   age: int,
-  isLoading: bool,
+  status: status,
 }
 
 type action =
   | Update(field, string)
-  | UpdateIsLoading(bool)
+  | UpdateStatus(status)
 
 let reducer = (state, action: action) =>
   switch action {
-  | Update(Name, name) => {...state, name: name}
-  | Update(Email, emailStr) => {...state, email: emailStr}
+  | Update(Name, name) => {
+      ...state,
+      status: Edited,
+      name: name,
+    }
+  | Update(Email, emailStr) => {
+      ...state,
+      status: Edited,
+      email: emailStr,
+    }
   | Update(Age, age) => {
       ...state,
+      status: Edited,
       age: age->Belt.Int.fromString->Belt.Option.getWithDefault(0),
     }
-  | UpdateIsLoading(isLoading) => {...state, isLoading: isLoading}
+  | UpdateStatus(status) => {...state, status: status}
   }
 
 let updateField = (dispatch, field, ev) => {
@@ -48,16 +71,16 @@ let make = () => {
       name: "",
       email: "",
       age: 0,
-      isLoading: false,
+      status: Iddle,
     },
   )
 
   let onChange = updateField(dispatch)
 
   let onClick = _ => {
-    dispatch(UpdateIsLoading(true))
+    dispatch(UpdateStatus(Saving))
     User.persist(({email: state.email, name: state.name, age: state.age}: User.t))
-    |> Js.Promise.then_(_user => dispatch(UpdateIsLoading(false)) |> Js.Promise.resolve)
+    |> Js.Promise.then_(_user => dispatch(UpdateStatus(Saved)) |> Js.Promise.resolve)
     |> ignore
   }
 
@@ -86,13 +109,23 @@ let make = () => {
         onChange={onChange(Age)}
         value={state.age->Belt.Int.toString}
       />
-      <button onClick className=Style.button>
-        {switch state.isLoading {
-        | false => React.string("Save")
-        | true => React.string("Saving")
+      <button
+        onClick
+        disabled={switch state.status {
+        | Edited => false
+        | _ => true
+        }}
+        className={Style.button(state.status)}>
+        {switch state.status {
+        | Saved => React.string("Saved")
+        | Saving => React.string("Saving...")
+        | Edited
+        | Iddle =>
+          React.string("Save")
         }}
       </button>
     </div>
   </div>
 }
+
 let default = make

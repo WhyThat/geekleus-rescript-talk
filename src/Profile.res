@@ -17,6 +17,7 @@ type state = {
   name: string,
   email: string,
   age: int,
+  isLoading: bool,
 }
 
 type action = Update(field, string)
@@ -78,7 +79,12 @@ let make = () => {
         onChange={onChange(Age)}
         value={state.age->Belt.Int.toString}
       />
-      <button onClick className=Style.button> {React.string("Save")} </button>
+      <button onClick className=Style.button>
+        {switch state.isLoading {
+        | false => React.string("Save")
+        | true => React.string("Saving")
+        }}
+      </button>
     </div>
   </div>
 }

@@ -33,19 +33,22 @@ function reducer(state, action) {
         return {
                 name: action._1,
                 email: state.email,
-                age: state.age
+                age: state.age,
+                isLoading: state.isLoading
               };
     case /* Email */1 :
         return {
                 name: state.name,
                 email: action._1,
-                age: state.age
+                age: state.age,
+                isLoading: state.isLoading
               };
     case /* Age */2 :
         return {
                 name: state.name,
                 email: state.email,
-                age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0)
+                age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
+                isLoading: state.isLoading
               };
     
   }
@@ -64,7 +67,8 @@ function Profile(Props) {
   var match = React.useReducer(reducer, {
         name: "",
         email: "",
-        age: 0
+        age: 0,
+        isLoading: false
       });
   var dispatch = match[1];
   var state = match[0];

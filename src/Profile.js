@@ -28,6 +28,14 @@ var Style = {
 };
 
 function reducer(state, action) {
+  if (action.TAG !== /* Update */0) {
+    return {
+            name: state.name,
+            email: state.email,
+            age: state.age,
+            isLoading: action._0
+          };
+  }
   switch (action._0) {
     case /* Name */0 :
         return {
@@ -57,6 +65,7 @@ function reducer(state, action) {
 function updateField(dispatch, field, ev) {
   var value = ev.target.value;
   return Curry._1(dispatch, {
+              TAG: 0,
               _0: field,
               _1: value,
               [Symbol.for("name")]: "Update"
@@ -76,10 +85,21 @@ function Profile(Props) {
     return updateField(dispatch, param, param$1);
   };
   var onClick = function (param) {
+    Curry._1(dispatch, {
+          TAG: 1,
+          _0: true,
+          [Symbol.for("name")]: "UpdateIsLoading"
+        });
     User.persist({
-          name: state.name,
-          age: state.age,
-          email: state.email
+            name: state.name,
+            age: state.age,
+            email: state.email
+          }).then(function (_user) {
+          return Promise.resolve(Curry._1(dispatch, {
+                          TAG: 1,
+                          _0: false,
+                          [Symbol.for("name")]: "UpdateIsLoading"
+                        }));
         });
     
   };
@@ -117,7 +137,7 @@ function Profile(Props) {
                     }), React.createElement("button", {
                       className: button,
                       onClick: onClick
-                    }, "Save")));
+                    }, state.isLoading ? "Saving" : "Save")));
 }
 
 var make = Profile;

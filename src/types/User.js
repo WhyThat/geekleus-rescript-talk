@@ -5,8 +5,16 @@ function isValid(str) {
   return str.includes("@");
 }
 
+function make(str) {
+  if (str.includes("@")) {
+    return str;
+  }
+  
+}
+
 var Email = {
-  isValid: isValid
+  isValid: isValid,
+  make: make
 };
 
 function persist(user) {

@@ -4,19 +4,52 @@ import * as Curry from "bs-platform/lib/es6/curry.js";
 import * as React from "react";
 import * as Caml_exceptions from "bs-platform/lib/es6/caml_exceptions.js";
 
-function isValid(password) {
-  return password.length > 3;
+function make(password) {
+  if (password === "") {
+    return /* Empty */0;
+  } else if (password.length > 3) {
+    return {
+            TAG: 0,
+            _0: password,
+            [Symbol.for("name")]: "Valid"
+          };
+  } else {
+    return {
+            TAG: 1,
+            _0: password,
+            [Symbol.for("name")]: "Invalid"
+          };
+  }
+}
+
+function getStatus(t) {
+  if (typeof t === "number") {
+    return /* Empty */0;
+  } else if (t.TAG === /* Valid */0) {
+    return {
+            TAG: 0,
+            _0: t._0,
+            [Symbol.for("name")]: "Valid"
+          };
+  } else {
+    return {
+            TAG: 1,
+            _0: t._0,
+            [Symbol.for("name")]: "Invalid"
+          };
+  }
 }
 
 var Password = {
-  isValid: isValid
+  make: make,
+  getStatus: getStatus
 };
 
 function reducer(_state, action) {
-  return action._0;
+  return make(action._0);
 }
 
-var initialState = "";
+var initialState = make("");
 
 function sendForm(state) {
   return state;
@@ -24,7 +57,7 @@ function sendForm(state) {
 
 var UnvalidPassword = /* @__PURE__ */Caml_exceptions.create("Base.UnvalidPassword");
 
-function send(password) {
+function send(_password) {
   return Promise.resolve("password saved");
 }
 
@@ -40,22 +73,32 @@ function Base(Props) {
               });
   };
   var onClick = function (param) {
-    if (password.length > 3) {
-      Promise.resolve("password saved");
+    var pwd = getStatus(password);
+    if (typeof pwd === "number") {
       return ;
     }
+    if (pwd.TAG !== /* Valid */0) {
+      return ;
+    }
+    Promise.resolve("password saved");
     
   };
+  var match$1 = getStatus(password);
+  var match$2 = getStatus(password);
+  var tmp;
+  tmp = typeof match$2 === "number" ? null : (
+      match$2.TAG === /* Valid */0 ? "Password valid" : "Password not long enough"
+    );
   return React.createElement("div", undefined, React.createElement("input", {
                   type: "text",
-                  value: password,
+                  value: typeof match$1 === "number" ? "" : match$1._0,
                   onChange: onPasswordChange
-                }), React.createElement("div", undefined, password.length > 3 ? "Password valid" : "Password not long enough"), React.createElement("button", {
+                }), React.createElement("div", undefined, tmp), React.createElement("button", {
                   onClick: onClick
                 }, "SEND"));
 }
 
-var make = Base;
+var make$1 = Base;
 
 export {
   Password ,
@@ -64,7 +107,7 @@ export {
   sendForm ,
   UnvalidPassword ,
   send ,
-  make ,
+  make$1 as make,
   
 }
-/* react Not a pure module */
+/* initialState Not a pure module */

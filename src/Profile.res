@@ -3,6 +3,7 @@ type status =
   | Edited
   | Saving
   | Saved
+
 module Style = {
   let input = "px-2 py-2 border-2 rounded-md border-gray-200 focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-transparent"
   let container = "flex flex-col shadow-xl"
@@ -80,9 +81,13 @@ let make = () => {
 
   let onClick = _ => {
     dispatch(UpdateStatus(Saving))
-    User.persist(({email: state.email, name: state.name, age: state.age}: User.t))
-    |> Js.Promise.then_(_user => dispatch(UpdateStatus(Saved)) |> Js.Promise.resolve)
-    |> ignore
+    switch state.email->User.Email.make {
+    | Some(email) =>
+      User.persist(({email: email, name: state.name, age: state.age}: User.t))
+      |> Js.Promise.then_(_user => dispatch(UpdateStatus(Saved)) |> Js.Promise.resolve)
+      |> ignore
+    | None => ()
+    }
   }
 
   <div className=Style.container>

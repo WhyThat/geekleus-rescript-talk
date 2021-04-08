@@ -5,6 +5,7 @@ import * as Curry from "bs-platform/lib/es6/curry.js";
 import * as React from "react";
 import * as Belt_Int from "bs-platform/lib/es6/belt_Int.js";
 import * as Belt_Option from "bs-platform/lib/es6/belt_Option.js";
+import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
 
 var input = "px-2 py-2 border-2 rounded-md border-gray-200 focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-transparent";
 
@@ -94,17 +95,21 @@ function Profile(Props) {
           _0: /* Saving */2,
           [Symbol.for("name")]: "UpdateStatus"
         });
-    User.persist({
-            name: state.name,
-            age: state.age,
-            email: state.email
-          }).then(function (_user) {
-          return Promise.resolve(Curry._1(dispatch, {
-                          TAG: 1,
-                          _0: /* Saved */3,
-                          [Symbol.for("name")]: "UpdateStatus"
-                        }));
-        });
+    var email = User.Email.make(state.email);
+    if (email !== undefined) {
+      User.persist({
+              name: state.name,
+              age: state.age,
+              email: Caml_option.valFromOption(email)
+            }).then(function (_user) {
+            return Promise.resolve(Curry._1(dispatch, {
+                            TAG: 1,
+                            _0: /* Saved */3,
+                            [Symbol.for("name")]: "UpdateStatus"
+                          }));
+          });
+      return ;
+    }
     
   };
   var match$1 = User.Email.isValid(state.email);

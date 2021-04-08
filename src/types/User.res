@@ -1,5 +1,6 @@
 module Email = {
   type t = string
+  let isValid: t => bool = str => Js.String.includes("@", str)
 }
 
 type t = {

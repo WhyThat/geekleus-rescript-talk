@@ -16,8 +16,9 @@ var headerText = "text-white text-center font-bold text-xl";
 
 var form = "flex flex-col py-6 px-8 space-y-5 bg-white";
 
-function button(status) {
-  var bg = status !== 1 ? "bg-gray-400" : "bg-yellow-500";
+function button(email, status) {
+  var match = User.Email.isValid(email);
+  var bg = match && status === 1 ? "bg-yellow-500" : "bg-gray-400";
   return "w-full py-3 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg " + bg;
 }
 
@@ -106,8 +107,9 @@ function Profile(Props) {
         });
     
   };
-  var match$1 = state.status;
+  var match$1 = User.Email.isValid(state.email);
   var match$2 = state.status;
+  var match$3 = state.status;
   return React.createElement("div", {
               className: container
             }, React.createElement("div", {
@@ -140,11 +142,11 @@ function Profile(Props) {
                           return onChange(/* Age */2, param);
                         })
                     }), React.createElement("button", {
-                      className: button(state.status),
-                      disabled: match$1 !== 1,
+                      className: button(state.email, state.status),
+                      disabled: match$1 ? match$2 !== 1 : true,
                       onClick: onClick
-                    }, match$2 !== 2 ? (
-                        match$2 >= 3 ? "Saved" : "Save"
+                    }, match$3 !== 2 ? (
+                        match$3 >= 3 ? "Saved" : "Save"
                       ) : "Saving...")));
 }
 

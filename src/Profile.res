@@ -10,12 +10,13 @@ module Style = {
   let headerText = "text-white text-center font-bold text-xl"
 
   let form = "flex flex-col py-6 px-8 space-y-5 bg-white"
-  let button = status => {
-    let bg = switch status {
-    | Edited => "bg-yellow-500"
-    | Iddle
-    | Saving
-    | Saved => "bg-gray-400"
+  let button = (email, status) => {
+    let bg = switch (email->User.Email.isValid, status) {
+    | (true, Edited) => "bg-yellow-500"
+    | (false, Edited)
+    | (_, Iddle)
+    | (_, Saving)
+    | (_, Saved) => "bg-gray-400"
     }
     "w-full py-3 text-black rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent shadow-lg " ++
     bg
@@ -111,11 +112,11 @@ let make = () => {
       />
       <button
         onClick
-        disabled={switch state.status {
-        | Edited => false
+        disabled={switch (state.email->User.Email.isValid, state.status) {
+        | (true, Edited) => false
         | _ => true
         }}
-        className={Style.button(state.status)}>
+        className={Style.button(state.email, state.status)}>
         {switch state.status {
         | Saved => React.string("Saved")
         | Saving => React.string("Saving...")

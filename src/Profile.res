@@ -29,9 +29,13 @@ type field =
   | Email
   | Age
 
+type email =
+  | Valid(User.Email.t)
+  | Invalid(string)
+
 type state = {
   name: string,
-  email: string,
+  email: email,
   age: int,
   status: status,
 }

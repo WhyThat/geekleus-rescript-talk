@@ -1,7 +1,11 @@
-module Email = {
+module Email: {
+  type t
+  let make: string => option<t>
+} = {
   type t = string
   let emailRe = %re("/^[^\s@]+@[^\s@]+$/")
   let isValid = str => Js.Re.test_(emailRe, str)
+  let make = str => isValid(str) ? Some(str) : None
 }
 
 type t = {

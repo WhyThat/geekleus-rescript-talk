@@ -3,13 +3,15 @@
 
 var emailRe = /^[^\s@]+@[^\s@]+$/;
 
-function isValid(str) {
-  return emailRe.test(str);
+function make(str) {
+  if (emailRe.test(str)) {
+    return str;
+  }
+  
 }
 
 var Email = {
-  emailRe: emailRe,
-  isValid: isValid
+  make: make
 };
 
 function persist(user) {

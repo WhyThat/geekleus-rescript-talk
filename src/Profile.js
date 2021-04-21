@@ -5,6 +5,7 @@ import * as Curry from "bs-platform/lib/es6/curry.js";
 import * as React from "react";
 import * as Belt_Int from "bs-platform/lib/es6/belt_Int.js";
 import * as Belt_Option from "bs-platform/lib/es6/belt_Option.js";
+import * as Caml_option from "bs-platform/lib/es6/caml_option.js";
 
 var input = "px-2 py-2 border-2 rounded-md border-gray-200 focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-transparent";
 
@@ -86,8 +87,8 @@ function Profile(Props) {
   };
   var onClick = function (param) {
     var match = state.status;
-    var match$1 = User.Email.isValid(state.email);
-    if (match !== 1 || !match$1) {
+    var match$1 = User.Email.make(state.email);
+    if (match !== 1 || match$1 === undefined) {
       return ;
     } else {
       Curry._1(dispatch, {
@@ -98,7 +99,7 @@ function Profile(Props) {
       User.persist({
               name: state.name,
               age: state.age,
-              email: state.email
+              email: Caml_option.valFromOption(match$1)
             }).then(function (param) {
             Curry._1(dispatch, {
                   TAG: 1,

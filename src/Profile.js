@@ -86,7 +86,8 @@ function Profile(Props) {
   };
   var onClick = function (param) {
     var match = state.status;
-    if (match !== 1) {
+    var match$1 = User.Email.isValid(state.email);
+    if (match !== 1 || !match$1) {
       return ;
     } else {
       Curry._1(dispatch, {

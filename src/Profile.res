@@ -17,9 +17,10 @@ type state = {
   name: string,
   email: string,
   age: int,
+  isLoading: bool,
 }
 
-type action = Update(field, string)
+type action = Update(field, string) | SetIsLoading(bool)
 
 let reducer = (state, action: action) =>
   switch action {
@@ -29,6 +30,7 @@ let reducer = (state, action: action) =>
       ...state,
       age: age->Belt.Int.fromString->Belt.Option.getWithDefault(0),
     }
+  | SetIsLoading(isLoading) => {...state, isLoading: isLoading}
   }
 
 let updateField = (dispatch, field, ev) => {
@@ -44,13 +46,22 @@ let make = () => {
       name: "",
       email: "",
       age: 0,
+      isLoading: false,
     },
   )
 
   let onChange = updateField(dispatch)
 
   let onClick = _ => {
-    User.persist(({email: state.email, name: state.name, age: state.age}: User.t)) |> ignore
+    if(!state.isLoading) {
+    dispatch(SetIsLoading(true))
+    User.persist(({email: state.email, name: state.name, age: state.age}: User.t))
+    |> Js.Promise.then_(_ => {
+      dispatch(SetIsLoading(false))
+      Js.Promise.resolve()
+    })
+    |> ignore
+  }
   }
 
   <div className=Style.container>

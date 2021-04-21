@@ -28,24 +28,35 @@ var Style = {
 };
 
 function reducer(state, action) {
+  if (action.TAG !== /* Update */0) {
+    return {
+            name: state.name,
+            email: state.email,
+            age: state.age,
+            isLoading: action._0
+          };
+  }
   switch (action._0) {
     case /* Name */0 :
         return {
                 name: action._1,
                 email: state.email,
-                age: state.age
+                age: state.age,
+                isLoading: state.isLoading
               };
     case /* Email */1 :
         return {
                 name: state.name,
                 email: action._1,
-                age: state.age
+                age: state.age,
+                isLoading: state.isLoading
               };
     case /* Age */2 :
         return {
                 name: state.name,
                 email: state.email,
-                age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0)
+                age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
+                isLoading: state.isLoading
               };
     
   }
@@ -54,6 +65,7 @@ function reducer(state, action) {
 function updateField(dispatch, field, ev) {
   var value = ev.target.value;
   return Curry._1(dispatch, {
+              TAG: 0,
               _0: field,
               _1: value,
               [Symbol.for("name")]: "Update"
@@ -64,7 +76,8 @@ function Profile(Props) {
   var match = React.useReducer(reducer, {
         name: "",
         email: "",
-        age: 0
+        age: 0,
+        isLoading: false
       });
   var dispatch = match[1];
   var state = match[0];
@@ -72,11 +85,26 @@ function Profile(Props) {
     return updateField(dispatch, param, param$1);
   };
   var onClick = function (param) {
-    User.persist({
-          name: state.name,
-          age: state.age,
-          email: state.email
-        });
+    if (!state.isLoading) {
+      Curry._1(dispatch, {
+            TAG: 1,
+            _0: true,
+            [Symbol.for("name")]: "SetIsLoading"
+          });
+      User.persist({
+              name: state.name,
+              age: state.age,
+              email: state.email
+            }).then(function (param) {
+            Curry._1(dispatch, {
+                  TAG: 1,
+                  _0: false,
+                  [Symbol.for("name")]: "SetIsLoading"
+                });
+            return Promise.resolve(undefined);
+          });
+      return ;
+    }
     
   };
   return React.createElement("div", {

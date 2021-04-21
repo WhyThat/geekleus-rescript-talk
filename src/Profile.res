@@ -60,8 +60,8 @@ let make = () => {
   let onChange = updateField(dispatch)
 
   let onClick = _ => {
-    switch state.status {
-    | Edited =>
+    switch (state.status, User.Email.isValid(state.email)) {
+    | (Edited, true) =>
       dispatch(SetStatus(Saving))
       User.persist(({email: state.email, name: state.name, age: state.age}: User.t))
       |> Js.Promise.then_(_ => {

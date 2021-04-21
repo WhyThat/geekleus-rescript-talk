@@ -1,5 +1,7 @@
 module Email = {
   type t = string
+  let emailRe = %re("/^[^\s@]+@[^\s@]+$/")
+  let isValid = str => Js.Re.test_(emailRe, str)
 }
 
 type t = {

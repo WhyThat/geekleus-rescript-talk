@@ -28,50 +28,35 @@ var Style = {
 };
 
 function reducer(state, action) {
-  switch (action.TAG | 0) {
-    case /* Update */0 :
-        switch (action._0) {
-          case /* Name */0 :
-              return {
-                      name: action._1,
-                      email: state.email,
-                      age: state.age,
-                      isLoading: state.isLoading,
-                      isEdited: true
-                    };
-          case /* Email */1 :
-              return {
-                      name: state.name,
-                      email: action._1,
-                      age: state.age,
-                      isLoading: state.isLoading,
-                      isEdited: true
-                    };
-          case /* Age */2 :
-              return {
-                      name: state.name,
-                      email: state.email,
-                      age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
-                      isLoading: state.isLoading,
-                      isEdited: true
-                    };
-          
-        }
-    case /* SetIsLoading */1 :
+  if (action.TAG !== /* Update */0) {
+    return {
+            name: state.name,
+            email: state.email,
+            age: state.age,
+            status: action._0
+          };
+  }
+  switch (action._0) {
+    case /* Name */0 :
         return {
-                name: state.name,
+                name: action._1,
                 email: state.email,
                 age: state.age,
-                isLoading: action._0,
-                isEdited: state.isEdited
+                status: /* Edited */1
               };
-    case /* SetIsEdited */2 :
+    case /* Email */1 :
+        return {
+                name: state.name,
+                email: action._1,
+                age: state.age,
+                status: /* Edited */1
+              };
+    case /* Age */2 :
         return {
                 name: state.name,
                 email: state.email,
-                age: state.age,
-                isLoading: state.isLoading,
-                isEdited: action._0
+                age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
+                status: /* Edited */1
               };
     
   }
@@ -92,8 +77,7 @@ function Profile(Props) {
         name: "",
         email: "",
         age: 0,
-        isLoading: false,
-        isEdited: false
+        status: /* Iddle */0
       });
   var dispatch = match[1];
   var state = match[0];
@@ -101,11 +85,14 @@ function Profile(Props) {
     return updateField(dispatch, param, param$1);
   };
   var onClick = function (param) {
-    if (state.isEdited && !state.isLoading) {
+    var match = state.status;
+    if (match !== 1) {
+      return ;
+    } else {
       Curry._1(dispatch, {
             TAG: 1,
-            _0: true,
-            [Symbol.for("name")]: "SetIsLoading"
+            _0: /* Saving */3,
+            [Symbol.for("name")]: "SetStatus"
           });
       User.persist({
               name: state.name,
@@ -114,24 +101,33 @@ function Profile(Props) {
             }).then(function (param) {
             Curry._1(dispatch, {
                   TAG: 1,
-                  _0: false,
-                  [Symbol.for("name")]: "SetIsLoading"
-                });
-            Curry._1(dispatch, {
-                  TAG: 2,
-                  _0: false,
-                  [Symbol.for("name")]: "SetIsEdited"
+                  _0: /* Saved */2,
+                  [Symbol.for("name")]: "SetStatus"
                 });
             return Promise.resolve(undefined);
           });
       return ;
     }
-    
   };
-  var match$1 = state.isEdited;
-  var match$2 = state.isLoading;
-  var match$3 = state.isLoading;
-  var match$4 = state.isEdited;
+  var match$1 = state.status;
+  var match$2 = state.status;
+  var tmp;
+  if (match$2 !== 0) {
+    switch (match$2) {
+      case /* Edited */1 :
+          tmp = "Save";
+          break;
+      case /* Saved */2 :
+          tmp = "Saved";
+          break;
+      case /* Saving */3 :
+          tmp = "Saving...";
+          break;
+      
+    }
+  } else {
+    tmp = "Saved";
+  }
   return React.createElement("div", {
               className: container
             }, React.createElement("div", {
@@ -165,11 +161,9 @@ function Profile(Props) {
                         })
                     }), React.createElement("button", {
                       className: button,
-                      disabled: match$1 && !match$2 ? false : true,
+                      disabled: match$1 !== 1,
                       onClick: onClick
-                    }, match$3 ? "Saving..." : (
-                        match$4 ? "Save" : "Saved"
-                      ))));
+                    }, tmp)));
 }
 
 var make = Profile;

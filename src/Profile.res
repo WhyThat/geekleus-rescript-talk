@@ -18,19 +18,22 @@ type state = {
   email: string,
   age: int,
   isLoading: bool,
+  isEdited: bool,
 }
 
-type action = Update(field, string) | SetIsLoading(bool)
+type action = Update(field, string) | SetIsLoading(bool) | SetIsEdited(bool)
 
 let reducer = (state, action: action) =>
   switch action {
-  | Update(Name, name) => {...state, name: name}
-  | Update(Email, emailStr) => {...state, email: emailStr}
+  | Update(Name, name) => {...state, name: name, isEdited: true}
+  | Update(Email, emailStr) => {...state, email: emailStr, isEdited: true}
   | Update(Age, age) => {
       ...state,
       age: age->Belt.Int.fromString->Belt.Option.getWithDefault(0),
+      isEdited: true,
     }
   | SetIsLoading(isLoading) => {...state, isLoading: isLoading}
+  | SetIsEdited(isEdited) => {...state, isEdited: isEdited}
   }
 
 let updateField = (dispatch, field, ev) => {
@@ -47,21 +50,23 @@ let make = () => {
       email: "",
       age: 0,
       isLoading: false,
+      isEdited: false,
     },
   )
 
   let onChange = updateField(dispatch)
 
   let onClick = _ => {
-    if(!state.isLoading) {
-    dispatch(SetIsLoading(true))
-    User.persist(({email: state.email, name: state.name, age: state.age}: User.t))
-    |> Js.Promise.then_(_ => {
-      dispatch(SetIsLoading(false))
-      Js.Promise.resolve()
-    })
-    |> ignore
-  }
+    if state.isEdited && !state.isLoading {
+      dispatch(SetIsLoading(true))
+      User.persist(({email: state.email, name: state.name, age: state.age}: User.t))
+      |> Js.Promise.then_(_ => {
+        dispatch(SetIsLoading(false))
+        dispatch(SetIsEdited(false))
+        Js.Promise.resolve()
+      })
+      |> ignore
+    }
   }
 
   <div className=Style.container>
@@ -89,7 +94,20 @@ let make = () => {
         onChange={onChange(Age)}
         value={state.age->Belt.Int.toString}
       />
-      <button onClick className=Style.button> {React.string("Save")} </button>
+      <button
+        onClick
+        disabled={switch (state.isEdited, state.isLoading) {
+        | (true, false) => false
+        | (true, true) => true
+        | (false, _) => true
+        }}
+        className=Style.button>
+        {switch (state.isLoading, state.isEdited) {
+        | (true, _) => React.string("Saving...")
+        | (false, false) => React.string("Saved")
+        | (false, true) => React.string("Save")
+        }}
+      </button>
     </div>
   </div>
 }

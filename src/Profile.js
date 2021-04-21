@@ -28,35 +28,50 @@ var Style = {
 };
 
 function reducer(state, action) {
-  if (action.TAG !== /* Update */0) {
-    return {
-            name: state.name,
-            email: state.email,
-            age: state.age,
-            isLoading: action._0
-          };
-  }
-  switch (action._0) {
-    case /* Name */0 :
-        return {
-                name: action._1,
-                email: state.email,
-                age: state.age,
-                isLoading: state.isLoading
-              };
-    case /* Email */1 :
+  switch (action.TAG | 0) {
+    case /* Update */0 :
+        switch (action._0) {
+          case /* Name */0 :
+              return {
+                      name: action._1,
+                      email: state.email,
+                      age: state.age,
+                      isLoading: state.isLoading,
+                      isEdited: true
+                    };
+          case /* Email */1 :
+              return {
+                      name: state.name,
+                      email: action._1,
+                      age: state.age,
+                      isLoading: state.isLoading,
+                      isEdited: true
+                    };
+          case /* Age */2 :
+              return {
+                      name: state.name,
+                      email: state.email,
+                      age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
+                      isLoading: state.isLoading,
+                      isEdited: true
+                    };
+          
+        }
+    case /* SetIsLoading */1 :
         return {
                 name: state.name,
-                email: action._1,
+                email: state.email,
                 age: state.age,
-                isLoading: state.isLoading
+                isLoading: action._0,
+                isEdited: state.isEdited
               };
-    case /* Age */2 :
+    case /* SetIsEdited */2 :
         return {
                 name: state.name,
                 email: state.email,
-                age: Belt_Option.getWithDefault(Belt_Int.fromString(action._1), 0),
-                isLoading: state.isLoading
+                age: state.age,
+                isLoading: state.isLoading,
+                isEdited: action._0
               };
     
   }
@@ -77,7 +92,8 @@ function Profile(Props) {
         name: "",
         email: "",
         age: 0,
-        isLoading: false
+        isLoading: false,
+        isEdited: false
       });
   var dispatch = match[1];
   var state = match[0];
@@ -85,7 +101,7 @@ function Profile(Props) {
     return updateField(dispatch, param, param$1);
   };
   var onClick = function (param) {
-    if (!state.isLoading) {
+    if (state.isEdited && !state.isLoading) {
       Curry._1(dispatch, {
             TAG: 1,
             _0: true,
@@ -101,12 +117,21 @@ function Profile(Props) {
                   _0: false,
                   [Symbol.for("name")]: "SetIsLoading"
                 });
+            Curry._1(dispatch, {
+                  TAG: 2,
+                  _0: false,
+                  [Symbol.for("name")]: "SetIsEdited"
+                });
             return Promise.resolve(undefined);
           });
       return ;
     }
     
   };
+  var match$1 = state.isEdited;
+  var match$2 = state.isLoading;
+  var match$3 = state.isLoading;
+  var match$4 = state.isEdited;
   return React.createElement("div", {
               className: container
             }, React.createElement("div", {
@@ -140,8 +165,11 @@ function Profile(Props) {
                         })
                     }), React.createElement("button", {
                       className: button,
+                      disabled: match$1 && !match$2 ? false : true,
                       onClick: onClick
-                    }, "Save")));
+                    }, match$3 ? "Saving..." : (
+                        match$4 ? "Save" : "Saved"
+                      ))));
 }
 
 var make = Profile;

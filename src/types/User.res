@@ -19,6 +19,29 @@ type t = {
   email: Email.t,
 }
 
+type view = {
+  name: string,
+  age: int,
+  email: string,
+}
+
+let make = (~name, ~age, ~email): option<t> =>
+  switch Email.make(email) {
+  | Some(email) =>
+    Some({
+      name: name,
+      email: email,
+      age: age,
+    })
+  | None => None
+  }
+
+let view: t => view = ({name, age, email}) => {
+  name,
+  age,
+  email: email->Email.toString
+}
+
 let persist = (user: t) => {
   Js.Promise.make((~resolve, ~reject as _) => {
     Js.Global.setTimeout(() => resolve(. user), 2000)->ignore

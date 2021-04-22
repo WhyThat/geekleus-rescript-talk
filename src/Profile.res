@@ -62,10 +62,10 @@ let make = () => {
   let onChange = updateField(dispatch)
 
   let onClick = _ => {
-    switch (state.status, User.Email.make(state.email)) {
-    | (Edited, Some(email)) =>
+    switch (state.status, User.make(~email=state.email, ~name=state.name, ~age=state.age)) {
+    | (Edited, Some(user)) =>
       dispatch(SetStatus(Saving))
-      User.persist(({email: email, name: state.name, age: state.age}: User.t))
+      User.persist(user)
       |> Js.Promise.then_(savedUser => {
         dispatch(SetStatus(Saved))
         setUser(_ => Some(savedUser))
@@ -117,8 +117,8 @@ let make = () => {
         }}
       </button>
     </div>
-    {switch user {
-    | Some({age: 99, name: "mathieu", email}) if email->User.Email.toString ===  "mathieu@example.com"=>
+    {switch (user->Belt.Option.map(User.view)) {
+    | Some({age: 99, name: "mathieu", email: "mathieu@example.com"}) =>
       React.string("You're an old Mathieu and you have a fake email")
     | Some({age: 99, name: "mathieu"}) => React.string("You're an old Mathieu")
     | Some({age: 99}) => React.string("You're an old user")

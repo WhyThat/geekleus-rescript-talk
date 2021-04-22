@@ -82,12 +82,16 @@ function Profile(Props) {
       });
   var dispatch = match[1];
   var state = match[0];
+  var match$1 = React.useState(function () {
+        
+      });
+  var setUser = match$1[1];
   var onChange = function (param, param$1) {
     return updateField(dispatch, param, param$1);
   };
   var onClick = function (param) {
     var match = state.status;
-    var match$1 = User.Email.make(state.email);
+    var match$1 = User.make(state.name, state.age, state.email);
     if (match !== 1 || match$1 === undefined) {
       return ;
     } else {
@@ -96,26 +100,25 @@ function Profile(Props) {
             _0: /* Saving */3,
             [Symbol.for("name")]: "SetStatus"
           });
-      User.persist({
-              name: state.name,
-              age: state.age,
-              email: Caml_option.valFromOption(match$1)
-            }).then(function (param) {
+      User.persist(Caml_option.valFromOption(match$1)).then(function (savedUser) {
             Curry._1(dispatch, {
                   TAG: 1,
                   _0: /* Saved */2,
                   [Symbol.for("name")]: "SetStatus"
                 });
+            Curry._1(setUser, (function (param) {
+                    return Caml_option.some(savedUser);
+                  }));
             return Promise.resolve(undefined);
           });
       return ;
     }
   };
-  var match$1 = state.status;
   var match$2 = state.status;
+  var match$3 = state.status;
   var tmp;
-  if (match$2 !== 0) {
-    switch (match$2) {
+  if (match$3 !== 0) {
+    switch (match$3) {
       case /* Edited */1 :
           tmp = "Save";
           break;
@@ -129,6 +132,22 @@ function Profile(Props) {
     }
   } else {
     tmp = "Saved";
+  }
+  var match$4 = Belt_Option.map(match$1[0], User.view);
+  var tmp$1;
+  if (match$4 !== undefined) {
+    var exit = 0;
+    if (match$4.name === "mathieu" && match$4.age === 99) {
+      tmp$1 = match$4.email === "mathieu@example.com" ? "You're an old Mathieu and you have a fake email" : "You're an old Mathieu";
+    } else {
+      exit = 1;
+    }
+    if (exit === 1) {
+      tmp$1 = match$4.age !== 99 ? "Can't say what you are" : "You're an old user";
+    }
+    
+  } else {
+    tmp$1 = "Can't say what you are";
   }
   return React.createElement("div", {
               className: container
@@ -163,9 +182,9 @@ function Profile(Props) {
                         })
                     }), React.createElement("button", {
                       className: button,
-                      disabled: match$1 !== 1,
+                      disabled: match$2 !== 1,
                       onClick: onClick
-                    }, tmp)));
+                    }, tmp)), tmp$1);
 }
 
 var make = Profile;

@@ -57,6 +57,8 @@ let make = () => {
     },
   )
 
+  let (user: option<User.t>, setUser) = React.useState(() => None)
+
   let onChange = updateField(dispatch)
 
   let onClick = _ => {
@@ -64,8 +66,9 @@ let make = () => {
     | (Edited, Some(email)) =>
       dispatch(SetStatus(Saving))
       User.persist(({email: email, name: state.name, age: state.age}: User.t))
-      |> Js.Promise.then_(_ => {
+      |> Js.Promise.then_(savedUser => {
         dispatch(SetStatus(Saved))
+        setUser(_ => Some(savedUser))
         Js.Promise.resolve()
       })
       |> ignore

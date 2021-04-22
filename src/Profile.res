@@ -117,6 +117,13 @@ let make = () => {
         }}
       </button>
     </div>
+    {switch user {
+    | Some({age: 99, name: "mathieu", email}) if email->User.Email.toString ===  "mathieu@example.com"=>
+      React.string("You're an old Mathieu and you have a fake email")
+    | Some({age: 99, name: "mathieu"}) => React.string("You're an old Mathieu")
+    | Some({age: 99}) => React.string("You're an old user")
+    | _ => React.string("Can't say what you are")
+    }}
   </div>
 }
 let default = make
